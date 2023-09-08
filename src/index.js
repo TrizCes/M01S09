@@ -1,23 +1,25 @@
-/*
-Defina um tipo "User" com campos como "id", "name", "age" e "profession". 
-Implemente um resolver para a consulta "getUser" que retorna um usuário 
-fictício com informações completas. 
-Use o GraphiQL para testar a consulta e ver os detalhes do usuário.
-*/
-const express = require("express");
+const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const schema = require('./schema');
-
+const schemaPost = require('./postSearch');
 const app = express();
 
 app.use(
-  '/graphql',
+  '/users', // Rota para pesquisa de usuarios
   graphqlHTTP({
-    schema: schema,
+    schema: schema, // Esquema pesquisa de usuarios
     graphiql: true,
   })
 );
 
-app.get('/', (req, res) => res.send('GraphQl is running'));
+app.use(
+  '/postSearch', // Rota para pesquisa de postagens
+  graphqlHTTP({
+    schema: schemaPost, // Esquema para pesquisa de postagens
+    graphiql: true,
+  })
+);
+
+app.get('/', (req, res) => res.send('GraphQL is running'));
 
 app.listen(3000, () => console.log(`📡 Server running on port 3000 (●'◡'●)`));

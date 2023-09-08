@@ -1,3 +1,10 @@
+/*
+Defina um tipo "User" com campos como "id", "name", "age" e "profession". 
+Implemente um resolver para a consulta "getUser" que retorna um usuário 
+fictício com informações completas. 
+Use o GraphiQL para testar a consulta e ver os detalhes do usuário.
+*/
+
 const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList } = require('graphql');
 
 const users = [

@@ -57,6 +57,14 @@ const PostOverviewType = new GraphQLObjectType({
   }),
 });
 
+const PostAtualizeType = new GraphQLObjectType({
+  name: 'PostAtualize',
+  fields: () => ({
+    id: { type: GraphQLInt },
+    title: { type: GraphQLString },
+  }),
+});
+
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
@@ -71,16 +79,39 @@ const RootQuery = new GraphQLObjectType({
       description: 'Posts list',
       resolve: () => posts,
     },
-    getAllPosts:{
+    getAllPosts: {
       type: new GraphQLList(PostOverviewType),
       description: 'Posts list - little',
       resolve: () => {
-        return posts.map(post => ({
+        return posts.map((post) => ({
           title: post.title,
-          publishDate: post.publishDate, 
-        }))
-      }
-    }
+          publishDate: post.publishDate,
+        }));
+      },
+    },
+  },
+});
+
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    updatePostTitle: {
+      type: PostAtualizeType,
+      args: {
+        id: { type: GraphQLInt },
+        title: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        let atualize = false;
+        posts.find((post) => {
+          if (post.id === args.id) {
+            post.title = args.title;
+            atualize = true;
+          }
+        });
+        return atualize ? args : null;
+      },
+    },
   },
 });
 
@@ -90,4 +121,5 @@ const schemaPost = new GraphQLSchema({
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: Mutation,
 });

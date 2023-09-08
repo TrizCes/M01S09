@@ -1,13 +1,13 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
-const schema = require('./schema');
+const schemaUser = require('./usersSchema');
 const schemaPost = require('./postSearch');
 const app = express();
 
 app.use(
   '/users', // Rota para pesquisa de usuarios
   graphqlHTTP({
-    schema: schema, // Esquema pesquisa de usuarios
+    schema: schemaUser, // Esquema pesquisa de usuarios
     graphiql: true,
   })
 );

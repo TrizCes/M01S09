@@ -1,69 +1,89 @@
-/*
-Defina um tipo "User" com campos como "id", "name", "age" e "profession". 
-Implemente um resolver para a consulta "getUser" que retorna um usuário 
-fictício com informações completas. 
-Use o GraphiQL para testar a consulta e ver os detalhes do usuário.
-*/
-
-/*
-Como parte do desenvolvimento da plataforma de redes sociais, 
-você precisa permitir que os usuários obtenham informações detalhadas sobre um usuário específico.
-Expanda a consulta "getUser" para aceitar um argumento "id". 
-Implemente o resolver para buscar um usuário com o ID correspondente e retorne os campos "name",
-"age" e "profession" desse usuário. 
-Dessa forma, os usuários podem obter informações detalhadas sobre perfis específicos.
- */
-
-const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull } = require('graphql');
+const {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLScalarType,
+  GraphQLDirective,
+  DirectiveLocation,
+  GraphQLBoolean,
+} = require('graphql');
 
 const users = [
-  { id: 1, name: 'Nini Ceschini', age: 18, profession: 'Professora' },
-  { id: 2, name: 'Merida', age: 18, profession: 'Arqueira' },
-  { id: 3, name: 'Aurora', age: 18, profession: 'Administradora' },
-  { id: 4, name: 'Belle', age: 20, profession: 'Bibliotecaria' },
+  { id: 1, name: 'Nini Ceschini', age: 18, profession: 'Professora', email: 'nini@email.com' },
+  { id: 2, name: 'Merida', age: 18, profession: 'Arqueira', email: 'merida@email.com' },
+  { id: 3, name: 'Aurora', age: 18, profession: 'Administradora', email: 'aurora@email.com' },
+  { id: 4, name: 'Belle', age: 20, profession: 'Bibliotecaria', email: 'belle@email.com' },
 ];
+
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+const EmailDirective = new GraphQLDirective({
+  name: 'email',
+  description: 'Validate email.',
+  locations: [DirectiveLocation.FIELD_DEFINITION],
+});
+
+const EmailScalarType = new GraphQLScalarType({
+  name: 'Email',
+  description: 'A custom scalar type for email addresses.',
+  serialize: (value) => {
+    if (!isValidEmail(value)) {
+      throw new Error(`Invalid email address: ${value}`);
+    }
+    return value;
+  },
+  parseValue: (value) => {
+    if (!isValidEmail(value)) {
+      throw new Error(`Invalid email address: ${value}`);
+    }
+    return value;
+  },
+  parseLiteral: (ast) => {
+    if (!isValidEmail(ast.value)) {
+      throw new Error(`Invalid email address: ${ast.value}`);
+    }
+    return ast.value;
+  },
+});
 
 const UserType = new GraphQLObjectType({
   name: 'User',
-  fields: () => ({
+  fields: {
     id: { type: GraphQLInt },
     name: { type: GraphQLString },
     age: { type: GraphQLInt },
     profession: { type: GraphQLString },
-  }),
-});
-
-const UserOverviewType = new GraphQLObjectType({
-  name: 'UserOverview',
-  fields: () => ({
-    name: { type: GraphQLString },
-    age: { type: GraphQLInt },
-    profession: { type: GraphQLString },
-  }),
+    email: {
+      type: EmailScalarType,
+      description: "The user's email address.",
+    },
+  },
 });
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
     getUser: {
-      type: UserOverviewType,
-      description: 'User description',
+      type: UserType,
+      description: 'Get user by ID',
       args: { id: { type: new GraphQLNonNull(GraphQLInt) } },
       resolve: (parent, args) => {
         const user = users.find((user) => user.id === args.id);
         if (!user) {
           throw new Error(`User with ID ${args.id} not found`);
         }
-        return {
-          name: user.name,
-          age: user.age,
-          profession: user.profession,
-        };
+        return user;
       },
     },
     Users: {
       type: new GraphQLList(UserType),
-      description: 'Users list',
+      description: 'List of users',
       resolve: () => users,
     },
   },
@@ -71,8 +91,7 @@ const RootQuery = new GraphQLObjectType({
 
 const schema = new GraphQLSchema({
   query: RootQuery,
+  directives: [EmailDirective],
 });
 
-module.exports = new GraphQLSchema({
-  query: RootQuery,
-});
+module.exports = schema;

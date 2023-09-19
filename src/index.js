@@ -2,6 +2,7 @@ const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const schemaUser = require('./users');
 const schemaPost = require('./post');
+const books = require('./book');
 const app = express();
 
 app.use(
@@ -16,6 +17,14 @@ app.use(
   '/postSearch', // Rota para pesquisa de postagens
   graphqlHTTP({
     schema: schemaPost, // Esquema para pesquisa de postagens
+    graphiql: true,
+  })
+);
+
+app.use(
+  '/books', // Rota para pesquisa de usuarios
+  graphqlHTTP({
+    schema: books, // Esquema pesquisa de usuarios
     graphiql: true,
   })
 );

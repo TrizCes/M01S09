@@ -1,7 +1,7 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
-const schemaUser = require('./usersSchema');
-const schemaPost = require('./postSearch');
+const schemaUser = require('./users');
+const schemaPost = require('./post');
 const app = express();
 
 app.use(

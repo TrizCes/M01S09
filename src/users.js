@@ -14,7 +14,7 @@ Implemente o resolver para buscar um usuário com o ID correspondente e retorne 
 Dessa forma, os usuários podem obter informações detalhadas sobre perfis específicos.
  */
 
-const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList } = require('graphql');
+const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull } = require('graphql');
 
 const users = [
   { id: 1, name: 'Nini Ceschini', age: 18, profession: 'Professora' },
@@ -48,17 +48,18 @@ const RootQuery = new GraphQLObjectType({
     getUser: {
       type: UserOverviewType,
       description: 'User description',
-      args: { id: { type: GraphQLInt } },
-      resolve: (parent, args) =>
-        users.find((user) => {
-          if (user.id === args.id) {
-            return {
-              name: user.name,
-              age: user.age,
-              profession: user.profession,
-            };
-          }
-        }),
+      args: { id: { type: new GraphQLNonNull(GraphQLInt) } },
+      resolve: (parent, args) => {
+        const user = users.find((user) => user.id === args.id);
+        if (!user) {
+          throw new Error(`User with ID ${args.id} not found`);
+        }
+        return {
+          name: user.name,
+          age: user.age,
+          profession: user.profession,
+        };
+      },
     },
     Users: {
       type: new GraphQLList(UserType),
